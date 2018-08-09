@@ -109,7 +109,7 @@ func mcWhitelistPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	args := []string{"-r", "mcs", "-X", "stuff", "'whitelist add " + username + "\n'"}
+	args := []string{"-r", "mcs", "-X", "stuff", "'whitelist add " + username + "\\n'"}
 	if err := exec.Command("screen", args...).Run(); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Println(err)

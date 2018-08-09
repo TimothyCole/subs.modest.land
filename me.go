@@ -35,6 +35,7 @@ func (session *SessionBody) twitchUser() ([]byte, *TwitchUsers) {
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err.Error())
+		return nil, nil
 	}
 
 	me, err := ioutil.ReadAll(res.Body)
@@ -59,6 +60,10 @@ func Me(w http.ResponseWriter, r *http.Request) {
 	}
 
 	me, s := session.twitchUser()
+	if me == nil && s == nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	if len(s.Data) == 0 {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -101,8 +106,8 @@ func jobRunner(session SessionBody, s *TwitchUsers) []*checkResponse {
 
 	for chann := range channels {
 		for _, check := range []string{"subbed", "followed"} {
-			go func(sb SessionBody, s *TwitchUsers, chann, check string) {
-				jobs <- sb.checkStatus(check, chann, s.Data[0].ID)
+			go func(session SessionBody, s *TwitchUsers, chann, check string) {
+				jobs <- session.checkStatus(check, chann, s.Data[0].ID)
 			}(session, s, chann, check)
 		}
 	}
@@ -119,7 +124,7 @@ type checkResponse struct {
 	Type        string `json:"type,omitempty"`
 }
 
-func (sb SessionBody) checkStatus(check string, channel, user string) *checkResponse {
+func (session SessionBody) checkStatus(check string, channel, user string) *checkResponse {
 	var endpoint = ""
 
 	switch check {
@@ -135,7 +140,7 @@ func (sb SessionBody) checkStatus(check string, channel, user string) *checkResp
 	req, err := http.NewRequest("GET", endpoint, nil)
 	req.Header.Add("Accept", "application/vnd.twitchtv.v5+json")
 	req.Header.Add("Client-ID", os.Getenv("TWITCH_CLIENT_ID"))
-	req.Header.Add("Authorization", fmt.Sprintf("OAuth %s", sb.Twitch.Auth.AccessToken))
+	req.Header.Add("Authorization", fmt.Sprintf("OAuth %s", session.Twitch.Auth.AccessToken))
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err.Error())

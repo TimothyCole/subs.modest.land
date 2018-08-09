@@ -109,12 +109,12 @@ func mcWhitelistPOST(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	args := []string{"-r", "mcs", "-X", "stuff", "'whitelist add " + username + "\\n'"}
-	if err := exec.Command("screen", args...).Run(); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+	command := exec.Command(`/home/coletimmy930/whitelist.sh`, username, tu.Data[0].DisplayName)
+	out, err := command.Output()
+	if err != nil {
 		fmt.Println(err)
-		return
 	}
+	fmt.Println(string(out))
 
 	resp, _ := json.Marshal(entry)
 	w.WriteHeader(http.StatusOK)

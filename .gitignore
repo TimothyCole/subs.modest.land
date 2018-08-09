@@ -11,3 +11,5 @@ dist/
 build/
 .env
 debug
+release/
+release.tar.gz

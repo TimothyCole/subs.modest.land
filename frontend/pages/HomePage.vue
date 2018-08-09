@@ -10,12 +10,16 @@
 			</div>
 			<div class="container billboard" v-if="$parent.user !== null">
 				<h1>Hey {{ $parent.user.me.data[0].display_name }}!</h1>
-				<div v-if="subbedTo">
+				<div v-if="hasAccess &&subbedTo && whitelist.length == 0">
 					<div>
-						<input @keyup.enter="whitelist" v-model="username" type="text" id="mcName"  placeholder="Enter your Minecraft Username to be added to the whitelist" />
-						<button v-on:click="whitelist">Add to Whitelist</button>
+						<input @keyup.enter="whitelistAdd" v-model="username" type="text" id="mcName" placeholder="Enter your Minecraft Username to be added to the whitelist" />
+						<button v-on:click="whitelistAdd">Add to Whitelist</button>
 					</div>
 					<p v-text="error"></p>
+					<h3>THIS CAN NOT BE CHANGED!!! <small style="font-size: 0.6em; font-weight: 300; font-style: italic;">(im lazy)</small></h3>
+				</div>
+				<div v-if="hasAccess && subbedTo && whitelist.length != 0">
+					<h2 class="name" v-text="whitelist"></h2>
 					<h3>THIS CAN NOT BE CHANGED!!! <small style="font-size: 0.6em; font-weight: 300; font-style: italic;">(im lazy)</small></h3>
 				</div>
 				<div v-if="!hasAccess">
@@ -41,6 +45,7 @@ export default {
 				"JamiePineLive",
 				"Ashturbate"
 			],
+			whitelist: "",
 			username: "",
 			error: "",
 		}
@@ -69,13 +74,35 @@ export default {
 			const days = Math.ceil(Math.abs(sinceDate.getTime() - now.getTime()) / (1000 * 3600 * 24)); 
 			return days > 7;
 		},
-		whitelist: function () {
+		whitelistAdd: async function () {
 			if (this.username.length < 3) return this.error = `Minecraft usernames need to be at least 3 characters`;
 			if (this.username.length > 16) return this.error = `Minecraft usernames can't be more than 16 characters`;
 			if (!/^[a-zA-Z0-9_]*$/.test(this.username)) return this.error = `Minecraft usernames can only be alphanumeric with underscores`;
-
 			this.error = ``;
+
+			let body = new FormData();
+			body.append("username", this.username);
+			this.whitelist = await fetch(`/whitelist`, {
+				method: "POST",
+				body,
+				headers: {
+					"Authorization": `Session ${this.$parent.getCookie("modestguard")}==`
+				}
+			}).then(r => r.json()).catch(_ => null)
+
+			if (this.whitelist == null) this.error = `There must of been a server error 🤔. Oops you can either try again or <a href="https://github.com/TimothyCole/subs.modest.land">fix my bad code</a>`;
+			if (this.whitelist.minecraft) this.whitelist = this.whitelist.minecraft
 		}
+	},
+	created: async function () {
+		try {
+			this.whitelist = (await fetch(`/whitelist`, {
+				method: "GET",
+				headers: {
+					"Authorization": `Session ${this.$parent.getCookie("modestguard")}==`
+				}
+			}).then(r => r.json())).minecraft
+		} catch(_) { this.whitelist = null }
 	}
 }
 </script>
@@ -143,6 +170,18 @@ export default {
 						transition: all 0.3 ease;
 						cursor: pointer;
 					}
+				}
+
+				h2.name {
+					background: #f2f2f23b;
+					color: #ffffff;
+					width: 500px;
+					border: 0;
+					margin: 0 0 15px;
+					padding: 15px;
+					box-sizing: border-box;
+					font-size: 17px;
+					font-weight: 100;
 				}
 
 				a {

@@ -49,6 +49,6 @@ func main() {
 	router.HandleFunc("/whitelist", mcWhitelistGET).Methods("GET")
 	router.HandleFunc("/whitelist", mcWhitelistPOST).Methods("POST")
 
-	fmt.Println("Starting server on :80")
-	panic(http.ListenAndServe(":80", router))
+	fmt.Println("Starting server on :1337")
+	panic(http.ListenAndServe(":1337", router))
 }

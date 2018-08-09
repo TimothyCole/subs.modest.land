@@ -15,12 +15,25 @@
 						<input @keyup.enter="whitelistAdd" v-model="username" type="text" id="mcName" placeholder="Enter your Minecraft Username to be added to the whitelist" />
 						<button v-on:click="whitelistAdd">Add to Whitelist</button>
 					</div>
+
 					<p v-text="error"></p>
 					<h3>THIS CAN NOT BE CHANGED!!! <small style="font-size: 0.6em; font-weight: 300; font-style: italic;">(im lazy)</small></h3>
+
+					<div class="information">
+						<h4>Server IP <code>smp.modest.land</code></h4>
+						<h4>Server Rules</h4>
+						<p v-for="rule in rules" v-bind:key="rule" v-text="rule"></p>
+					</div>
 				</div>
 				<div v-if="hasAccess && subbedTo && whitelist.length != 0">
 					<h2 class="name" v-text="whitelist"></h2>
 					<h3>THIS CAN NOT BE CHANGED!!! <small style="font-size: 0.6em; font-weight: 300; font-style: italic;">(im lazy)</small></h3>
+
+					<div class="information">
+						<h4>Server IP <code>smp.modest.land</code></h4>
+						<h4>Server Rules</h4>
+						<p v-for="rule in rules" v-bind:key="rule" v-text="rule"></p>
+					</div>
 				</div>
 				<div v-if="!hasAccess">
 					<p>Thank you for your interest but you're not a subsciber of any of the following channels 😭</p>
@@ -48,6 +61,12 @@ export default {
 			whitelist: "",
 			username: "",
 			error: "",
+			rules: [
+				"No griefing/trolling other member or their areas.",
+				"Respect other members personal space.",
+				"Keep in game chat clean and stream friendly.",
+				"Keep your client vanilla, only add mods that're for performance like optifine or betterfps",
+			]
 		}
 	},
 	computed: {
@@ -169,6 +188,26 @@ export default {
 						-webkit-transition: all 0.3 ease;
 						transition: all 0.3 ease;
 						cursor: pointer;
+					}
+				}
+
+				div.information {
+					text-align: left;
+
+					h4 {
+						font-size: 1.1rem;
+						margin: 20px 0;
+
+						code {
+							background: rgba(54, 135, 150, 0.288);
+							padding: 8px 10px;
+							margin-left: 10px;
+							border-radius: 5px;
+						}
+					}
+
+					p {
+						text-align: left;
 					}
 				}
 

@@ -10,7 +10,7 @@
 			</div>
 			<div class="container billboard" v-if="$parent.user !== null">
 				<h1>Hey {{ $parent.user.me.data[0].display_name }}!</h1>
-				<div v-if="hasAccess &&subbedTo && whitelist.length == 0">
+				<div v-if="hasAccess && subbedTo && whitelist.length == 0">
 					<div>
 						<input @keyup.enter="whitelistAdd" v-model="username" type="text" id="mcName" placeholder="Enter your Minecraft Username to be added to the whitelist" />
 						<button v-on:click="whitelistAdd">Add to Whitelist</button>

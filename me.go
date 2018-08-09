@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 )
 
 // TwitchUsers is a stuct for the helix users endpoint
@@ -19,6 +21,12 @@ type TwitchUsers struct {
 	} `json:"data"`
 }
 
+var channels = map[string]string{
+	"ModestTim":     "51684790",
+	"Jamie254":      "54406241",
+	"JamiePineLive": "48234453",
+}
+
 // Me just returns data about the authed user
 func Me(w http.ResponseWriter, r *http.Request) {
 	session, err := CheckAuthorization(w, r, false, false)
@@ -31,14 +39,111 @@ func Me(w http.ResponseWriter, r *http.Request) {
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", session.Twitch.Auth.AccessToken))
 	res, err := client.Do(req)
 	if err != nil {
-		panic(err.Error())
+		fmt.Println(err.Error())
 	}
 
-	body, err := ioutil.ReadAll(res.Body)
+	me, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		panic(err.Error())
+		fmt.Println(err.Error())
 	}
+
+	var s = new(TwitchUsers)
+	err = json.Unmarshal([]byte(me), &s)
+	if err != nil {
+		fmt.Println("whoops:", err)
+	}
+
+	if len(s.Data) == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		w.Write([]byte(me))
+		return
+	}
+
+	var done = make(chan bool)
+	var jobs = make(chan *checkResponse, len(channels)*2)
+
+	var checks []*checkResponse
+	go func() {
+		i := 0
+		for {
+			job := <-jobs
+			checks = append(checks, job)
+
+			if i++; i == len(channels)*2 {
+				close(jobs)
+				done <- true
+				return
+			}
+		}
+	}()
+
+	for chann := range channels {
+		for _, check := range []string{"subbed", "followed"} {
+			go func(sb SessionBody, s *TwitchUsers, chann, check string) {
+				jobs <- sb.checkStatus(check, chann, s.Data[0].ID)
+			}(session, s, chann, check)
+		}
+	}
+
+	<-done
+	jsonResp, _ := json.Marshal(struct {
+		Me     *TwitchUsers     `json:"me"`
+		Access bool             `json:"access"`
+		Checks []*checkResponse `json:"checks"`
+	}{
+		Me:     s,
+		Access: false,
+		Checks: checks,
+	})
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(body))
+	w.Write([]byte(jsonResp))
+}
+
+type checkResponse struct {
+	CreatedAt   string `json:"created_at,omitempty"`
+	Error       string `json:"error,omitempty"`
+	ChannelName string `json:"channel_name,omitempty"`
+	ChannelID   string `json:"channel_id,omitempty"`
+	Type        string `json:"type,omitempty"`
+}
+
+func (sb SessionBody) checkStatus(check string, channel, user string) *checkResponse {
+	var endpoint = ""
+
+	switch check {
+	case "subbed":
+		endpoint = "https://api.twitch.tv/kraken/users/" + user + "/subscriptions/" + channels[channel]
+		break
+	case "followed":
+		endpoint = "https://api.twitch.tv/kraken/users/" + user + "/follows/channels/" + channels[channel]
+		break
+	}
+
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", endpoint, nil)
+	req.Header.Add("Accept", "application/vnd.twitchtv.v5+json")
+	req.Header.Add("Client-ID", os.Getenv("TWITCH_CLIENT_ID"))
+	req.Header.Add("Authorization", fmt.Sprintf("OAuth %s", sb.Twitch.Auth.AccessToken))
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	me, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	var s = new(checkResponse)
+	err = json.Unmarshal([]byte(me), &s)
+	if err != nil {
+		fmt.Println("whoops:", err)
+	}
+
+	s.ChannelID = channels[channel]
+	s.ChannelName = channel
+	s.Type = check
+
+	return s
 }

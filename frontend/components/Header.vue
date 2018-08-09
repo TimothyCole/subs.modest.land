@@ -22,7 +22,7 @@ export default {
 			loginPopup: () => {
 				const endpoint = `https://api.twitch.tv/kraken/oauth2/authorize`;
 				const scopes = [
-					"channel_check_subscription",
+					"user_subscriptions",
 				].join(" ");
 
 				const url = `${endpoint}?scope=${scopes}&client_id=${twitchClientID}&redirect_uri=${twitchClientRedirect}&response_type=code&force_verify=true`;

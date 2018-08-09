@@ -2,11 +2,15 @@
 	<div id="HomePage">
 		<div class="gradient">
 			<Header class="container"></Header>
-			<div class="container billboard">
+			<div class="container billboard" v-if="$parent.user === null">
 				<p>Login with your Twitch account on the top right to prove that you're a subscriber of one of the following channels.</p>
 				<div v-for="channel of channels" v-bind:key="channel">
 					<a :href="`https://twitch.tv/${channel.toLowerCase()}`" target="_blank">{{ channel }}</a>
 				</div>
+			</div>
+			<div class="container billboard" v-if="$parent.user !== null">
+				<h1>Hey {{ $parent.user.me.data[0].display_name }}!</h1>
+				<pre style="text-align: left;">{{ $parent.user | json_encode }}</pre>
 			</div>
 			<Footer></Footer>
 		</div>
@@ -24,6 +28,9 @@ export default {
 				"JamiePineLive",
 			]
 		}
+	},
+	mounted: function () {
+		console.log(this.$parent.parentTest)
 	}
 }
 </script>

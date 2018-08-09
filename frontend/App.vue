@@ -6,7 +6,30 @@
 
 <script>
 export default {
-	name: 'Main'
+	name: 'Main',
+	data: () => {
+		return {
+			user: null
+		}
+	},
+	created: async function () {
+		try {
+			this.user = (await fetch(`/me`, {
+				method: "GET",
+				headers: {
+					"Authorization": `Session ${this.getCookie("modestguard")}==`
+				}
+			}).then(r => r.json()))
+		} catch(_) { this.user = null }
+	},
+	methods: {
+		getCookie: name => {
+			return document.cookie.split('; ').reduce((r, v) => {
+				const parts = v.split('=')
+				return parts[0] === name ? decodeURIComponent(parts[1]) : r
+			}, '')
+		}
+	}
 }
 </script>
 

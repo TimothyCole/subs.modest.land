@@ -88,11 +88,9 @@ func Me(w http.ResponseWriter, r *http.Request) {
 	<-done
 	jsonResp, _ := json.Marshal(struct {
 		Me     *TwitchUsers     `json:"me"`
-		Access bool             `json:"access"`
 		Checks []*checkResponse `json:"checks"`
 	}{
 		Me:     s,
-		Access: false,
 		Checks: checks,
 	})
 

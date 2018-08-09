@@ -151,7 +151,9 @@ func (sb SessionBody) Update() SessionBody {
 
 // Delete removes session from sessions list
 func (sb SessionBody) Delete() SessionBody {
+	sessionsMutex.Lock()
 	delete(sessions, sb.Token)
+	sessionsMutex.Unlock()
 
 	return SessionBody{}
 }

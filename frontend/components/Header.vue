@@ -5,7 +5,8 @@
 			<router-link to="/" tag="h4" >Modest Land Subscriber Perks</router-link>
 		</div>
 		<div class="right">
-			<div class="login" id="show-modal" @click="loginPopup">Login with Twitch</div>
+			<div class="login" @click="loginPopup" v-if="$parent.$parent.user === null">Login with Twitch</div>
+			<div class="login" @click="logout" v-if="$parent.$parent.user !== null">Logout</div>
 		</div>
 	</div>
 </template>
@@ -15,10 +16,6 @@ export default {
 	name: 'Header',
 	data () {
 		return {
-			menu: [
-				{ to: "/", name: "Home" },
-				{ to: "/videos", name: "VODs" },
-			],
 			loginPopup: () => {
 				const endpoint = `https://api.twitch.tv/kraken/oauth2/authorize`;
 				const scopes = [
@@ -26,7 +23,21 @@ export default {
 				].join(" ");
 
 				const url = `${endpoint}?scope=${scopes}&client_id=${twitchClientID}&redirect_uri=${twitchClientRedirect}&response_type=code&force_verify=true`;
-				window.open(url, "_blank", "toolbar=no,scrollbars=yes,resizable=yes,width=440,height=580");
+				const popup = window.open(url, "_blank", "toolbar=no,scrollbars=yes,resizable=yes,width=440,height=580");
+				setInterval(() => { 
+					if (!popup.closed) return;
+					location.reload();
+				}, 250);
+			},
+			logout: async () => {
+				let vm = this.$parent.$parent;
+				await fetch(`/logout`, {
+					method: "DELETE",
+					headers: {
+						"Authorization": `Session ${vm.getCookie("modestguard")}==`
+					}
+				});
+				location.reload();
 			}
 		}
 	}

@@ -1,6 +1,6 @@
 <template>
 	<div class="footer">
-		<p><i><b>Disclaimer</b> You much be either a follower or a subscriber for more than a week to gain access to perks to pervent trolls from making new accounts to grief.</i></p>
+		<p><i><b>Disclaimer</b> You must be either a follower or a subscriber for more than a week to gain access to perks to pervent trolls from making new accounts to grief.</i></p>
 		<p>Copyright &copy; {{ start }}-{{ end }} - Timothy Cole - All Rights Reserved.</p>
 	</div>
 </template>

@@ -14,12 +14,13 @@ export default {
 	},
 	created: async function () {
 		try {
-			this.user = (await fetch(`/me`, {
+			this.user = await fetch(`/me`, {
 				method: "GET",
 				headers: {
 					"Authorization": `Session ${this.getCookie("modestguard")}==`
 				}
-			}).then(r => r.json()))
+			}).then(r => r.json())
+			if (this.user.error) this.user = null;
 		} catch(_) { this.user = null }
 	},
 	methods: {

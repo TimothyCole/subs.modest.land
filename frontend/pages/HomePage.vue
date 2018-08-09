@@ -16,7 +16,7 @@
 						<button v-on:click="whitelist">Add to Whitelist</button>
 					</div>
 					<p v-text="error"></p>
-					<h3>THIS CAN NOT BE CHANGED!!! <small style="font-size: 0.6em; font-weight: 300; font-style: italic;">(im fat)</small></h3>
+					<h3>THIS CAN NOT BE CHANGED!!! <small style="font-size: 0.6em; font-weight: 300; font-style: italic;">(im lazy)</small></h3>
 				</div>
 				<div v-if="!hasAccess">
 					<p>Thank you for your interest but you're not a subsciber of any of the following channels 😭</p>
@@ -87,7 +87,7 @@ export default {
 	#HomePage {
 		width: 100%;
 		min-height: 100%;
-		background-image: url('http://www.3sixtydisplays.co.uk/wp-content/uploads/2015/09/3d_low_poly_abstract-2560x1600.jpg');
+		background-image: url('https://cdn.tcole.me/low-poly-bg-smp.jpg');
 		background-position: center;
 		background-repeat: no-repeat;
 		background-size: cover;

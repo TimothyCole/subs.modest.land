@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -72,6 +73,7 @@ func TwitchAuthorize(w http.ResponseWriter, r *http.Request) {
 		session.Twitch.Auth.RefreshToken = data.RefreshToken
 		session.Twitch.Auth.ExpiresIn = data.ExpiresIn
 		session.Update()
+		fmt.Println(session)
 	}
 
 	w.Write([]byte(`

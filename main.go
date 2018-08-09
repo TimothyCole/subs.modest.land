@@ -46,6 +46,8 @@ func main() {
 	router.HandleFunc("/authorize", TwitchAuthorize).Methods("GET")
 	router.HandleFunc("/me", Me).Methods("GET")
 	router.HandleFunc("/logout", Logout).Methods("DELETE")
+	router.HandleFunc("/whitelist", mcWhitelistGET).Methods("GET")
+	router.HandleFunc("/whitelist", mcWhitelistPOST).Methods("POST")
 
 	fmt.Println("Starting server on :80")
 	panic(http.ListenAndServe(":80", router))

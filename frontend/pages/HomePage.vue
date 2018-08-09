@@ -16,7 +16,7 @@
 						<button v-on:click="whitelist">Add to Whitelist</button>
 					</div>
 					<p v-text="error"></p>
-					<h3>THIS CAN NOT BE CHANGED!!! <small style="font-size: 0.6em; font-weight: 300; font-style: italic;">(im lazy)</small></h3>
+					<h3>THIS CAN NOT BE CHANGED!!! <small style="font-size: 0.6em; font-weight: 300; font-style: italic;">(im fat)</small></h3>
 				</div>
 				<div v-if="!hasAccess">
 					<p>Thank you for your interest but you're not a subsciber of any of the following channels 😭</p>
@@ -39,6 +39,7 @@ export default {
 				"ModestTim",
 				"Jamie254",
 				"JamiePineLive",
+				"Ashturbate"
 			],
 			username: "",
 			error: "",

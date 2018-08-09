@@ -25,15 +25,10 @@ var channels = map[string]string{
 	"ModestTim":     "51684790",
 	"Jamie254":      "54406241",
 	"JamiePineLive": "48234453",
+	"Ashturbate":    "46887603",
 }
 
-// Me just returns data about the authed user
-func Me(w http.ResponseWriter, r *http.Request) {
-	session, err := CheckAuthorization(w, r, false, false)
-	if err != nil {
-		return
-	}
-
+func (session *SessionBody) twitchUser() ([]byte, *TwitchUsers) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://api.twitch.tv/helix/users", nil)
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", session.Twitch.Auth.AccessToken))
@@ -53,16 +48,43 @@ func Me(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("whoops:", err)
 	}
 
+	return me, s
+}
+
+// Me just returns data about the authed user
+func Me(w http.ResponseWriter, r *http.Request) {
+	session, err := CheckAuthorization(w, r, false, false)
+	if err != nil {
+		return
+	}
+
+	me, s := session.twitchUser()
+
 	if len(s.Data) == 0 {
 		w.WriteHeader(http.StatusUnauthorized)
 		w.Write([]byte(me))
 		return
 	}
 
+	checks := jobRunner(session, s)
+
+	jsonResp, _ := json.Marshal(struct {
+		Me     *TwitchUsers     `json:"me"`
+		Checks []*checkResponse `json:"checks"`
+	}{
+		Me:     s,
+		Checks: checks,
+	})
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(jsonResp))
+}
+
+func jobRunner(session SessionBody, s *TwitchUsers) []*checkResponse {
 	var done = make(chan bool)
 	var jobs = make(chan *checkResponse, len(channels)*2)
-
 	var checks []*checkResponse
+
 	go func() {
 		i := 0
 		for {
@@ -86,16 +108,7 @@ func Me(w http.ResponseWriter, r *http.Request) {
 	}
 
 	<-done
-	jsonResp, _ := json.Marshal(struct {
-		Me     *TwitchUsers     `json:"me"`
-		Checks []*checkResponse `json:"checks"`
-	}{
-		Me:     s,
-		Checks: checks,
-	})
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(jsonResp))
+	return checks
 }
 
 type checkResponse struct {
